@@ -4,6 +4,7 @@ import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { createRoot } from "react-dom/client";
+import React from "react";
 
 let toastContainerInjected = false; // ensure ToastContainer is added only once
 
@@ -26,8 +27,15 @@ export const useSmartFetch = (url, options = {}) => {
         if (toaster && !toastContainerInjected) {
             const toastDiv = document.createElement("div");
             document.body.appendChild(toastDiv);
+
             const root = createRoot(toastDiv);
-            root.render(<ToastContainer position="top-right" theme="colored" />);
+            root.render(
+                React.createElement(ToastContainer, {
+                    position: "top-right",
+                    theme: "colored",
+                })
+            );
+
             toastContainerInjected = true;
         }
     }, [toaster]);
