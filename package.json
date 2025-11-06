@@ -1,6 +1,6 @@
 {
   "name": "webtutils",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Smart, one-line utilities for web developers.",
   "keywords": [
     "smart",
@@ -20,12 +20,13 @@
   "license": "ISC",
   "author": "Rana Huzaifa",
   "type": "module",
-  "main": "src/index.js",
-  "module": "src/index.js",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
   "files": [
-    "src"
+    "dist"
   ],
   "scripts": {
+    "build": "esbuild src/index.js --bundle --minify --outfile=dist/index.js",
     "test": "echo \"No test specified\" && exit 0"
   },
   "dependencies": {
@@ -35,5 +36,8 @@
   "peerDependencies": {
     "react": ">=16.8",
     "react-dom": ">=16.8"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.12"
   }
 }
