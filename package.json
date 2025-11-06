@@ -26,7 +26,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "esbuild src/index.js --bundle --minify --format=esm --outfile=dist/index.js --external:react --external:react-dom",
+    "build": "esbuild src/index.js --format=esm --bundle --minify=false --outfile=dist/index.js --external:react --external:react-dom --external:axios --external:react-toastify",
     "test": "echo \"No test specified\" && exit 0"
   },
   "dependencies": {
