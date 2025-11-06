@@ -11,10 +11,17 @@ var useSmartFetch = (url, options = {}) => {
     try {
       const res = await axios({ method, url, headers, ...body && { data: body } });
       setData(res.data);
-      if (toaster) alert(`\u2705 Success: ${res.data?.message || "Request successful"}`);
+      if (toaster) {
+        alert(`\u2705 Success: ${res.data?.message || "Request successful"}`);
+        console.log(`\u2705 Success: ${res.data?.message || "Request successful"}`);
+      }
+      ;
     } catch (err) {
       setError(err.response?.data?.message || err.message);
-      if (toaster) alert(`\u274C Error: ${err.message}`);
+      if (toaster) {
+        alert(`\u274C Error: ${err.message}`);
+        console.log(`\u274C Error: ${err.message}`);
+      }
     } finally {
       setLoading(false);
     }
