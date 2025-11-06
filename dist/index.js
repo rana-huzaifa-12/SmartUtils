@@ -1,37 +1,34 @@
 // src/hooks/useSmartFetch.js
 import { useState, useEffect, useRef } from "react";
+import React from "react";
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import { createRoot } from "react-dom/client";
-import React from "react";
-var toastContainerInjected = false;
+import "react-toastify/dist/ReactToastify.css";
+var toastContainerAdded = false;
+var ensureToastContainer = () => {
+  if (toastContainerAdded) return;
+  const div = document.createElement("div");
+  document.body.appendChild(div);
+  const root = createRoot(div);
+  root.render(React.createElement(ToastContainer, {}));
+  toastContainerAdded = true;
+};
 var useSmartFetch = (url, options = {}) => {
   const {
     method = "GET",
     body = null,
     headers = {},
     toaster = false,
-    auto = true
+    auto = true,
+    successMsg = "Request successful \u2705",
+    errorMsg = "An error occurred \u274C",
+    toastConfig = {}
   } = options;
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(auto);
   const [error, setError] = useState(null);
   const hasFetched = useRef(false);
-  useEffect(() => {
-    if (toaster && !toastContainerInjected) {
-      const toastDiv = document.createElement("div");
-      document.body.appendChild(toastDiv);
-      const root = createRoot(toastDiv);
-      root.render(
-        React.createElement(ToastContainer, {
-          position: "top-right",
-          theme: "colored"
-        })
-      );
-      toastContainerInjected = true;
-    }
-  }, [toaster]);
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -44,20 +41,28 @@ var useSmartFetch = (url, options = {}) => {
       setData(res.data);
       setError(null);
       if (toaster) {
-        toast.success(res.data?.message || "Request successful \u2705", {
-          autoClose: 2e3
+        ensureToastContainer();
+        toast.success(res.data?.message || successMsg, {
+          position: "top-right",
+          autoClose: 2e3,
+          theme: "colored",
+          ...toastConfig
         });
       }
-      console.log("\u2705 SmartFetch Success:", res.data);
+      console.log("\u2705 Fetched:", res.data);
     } catch (err) {
       const msg = err.response?.data?.message || err.message;
       setError(msg);
       if (toaster) {
-        toast.error(`\u274C ${msg}`, {
-          autoClose: 3e3
+        ensureToastContainer();
+        toast.error(`${errorMsg}: ${msg}`, {
+          position: "top-right",
+          autoClose: 3e3,
+          theme: "colored",
+          ...toastConfig
         });
       }
-      console.error("\u274C SmartFetch Error:", msg);
+      console.error("\u274C Fetch Error:", msg);
     } finally {
       setLoading(false);
     }
