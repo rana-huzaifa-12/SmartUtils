@@ -1,12 +1,25 @@
 // src/hooks/useSmartFetch.js
 import { useState, useEffect, useRef } from "react";
+import React from "react";
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import { createRoot } from "react-dom/client";
-import React from "react";
+import "react-toastify/dist/ReactToastify.css";
 
-let toastContainerInjected = false; // ensure ToastContainer is added only once
+// ✅ This renders ToastContainer only once globally
+let toastContainerAdded = false;
+const ensureToastContainer = () => {
+    if (toastContainerAdded) return;
+
+    const div = document.createElement("div");
+    document.body.appendChild(div);
+
+    const root = createRoot(div);
+    // ✅ Use React.createElement instead of JSX
+    root.render(React.createElement(ToastContainer, {}));
+
+    toastContainerAdded = true;
+};
 
 export const useSmartFetch = (url, options = {}) => {
     const {
@@ -15,32 +28,16 @@ export const useSmartFetch = (url, options = {}) => {
         headers = {},
         toaster = false,
         auto = true,
+        successMsg = "Request successful ✅",
+        errorMsg = "An error occurred ❌",
+        toastConfig = {},
     } = options;
 
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(auto);
     const [error, setError] = useState(null);
-    const hasFetched = useRef(false); // prevent double fetch in Strict Mode
+    const hasFetched = useRef(false);
 
-    // ✅ Inject ToastContainer automatically once
-    useEffect(() => {
-        if (toaster && !toastContainerInjected) {
-            const toastDiv = document.createElement("div");
-            document.body.appendChild(toastDiv);
-
-            const root = createRoot(toastDiv);
-            root.render(
-                React.createElement(ToastContainer, {
-                    position: "top-right",
-                    theme: "colored",
-                })
-            );
-
-            toastContainerInjected = true;
-        }
-    }, [toaster]);
-
-    // 🔥 Fetch logic
     const fetchData = async () => {
         setLoading(true);
         try {
@@ -55,29 +52,36 @@ export const useSmartFetch = (url, options = {}) => {
             setError(null);
 
             if (toaster) {
-                toast.success(res.data?.message || "Request successful ✅", {
+                ensureToastContainer();
+                toast.success(res.data?.message || successMsg, {
+                    position: "top-right",
                     autoClose: 2000,
+                    theme: "colored",
+                    ...toastConfig,
                 });
             }
 
-            console.log("✅ SmartFetch Success:", res.data);
+            console.log("✅ Fetched:", res.data);
         } catch (err) {
             const msg = err.response?.data?.message || err.message;
             setError(msg);
 
             if (toaster) {
-                toast.error(`❌ ${msg}`, {
+                ensureToastContainer();
+                toast.error(`${errorMsg}: ${msg}`, {
+                    position: "top-right",
                     autoClose: 3000,
+                    theme: "colored",
+                    ...toastConfig,
                 });
             }
 
-            console.error("❌ SmartFetch Error:", msg);
+            console.error("❌ Fetch Error:", msg);
         } finally {
             setLoading(false);
         }
     };
 
-    // 🧠 Auto fetch only once (prevent duplicate in Strict Mode)
     useEffect(() => {
         if (auto && !hasFetched.current) {
             hasFetched.current = true;
